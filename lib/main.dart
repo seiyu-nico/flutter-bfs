@@ -143,11 +143,12 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
-    // ここから戻るように色を塗る
     if (goal.parent == null) {
+      // ゴールに到達できない場合
       return null;
     }
 
+    // ここから戻るように色を塗る
     setState(() {
       goal.shortest = true;
     });
@@ -163,7 +164,5 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       start.shortest = true;
     });
-    // ゴールに到達できない場合
-    return null;
   }
 }
