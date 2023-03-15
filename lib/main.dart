@@ -1,150 +1,169 @@
-// // Flutter imports:
-// import 'package:flutter/material.dart';
-
-// void main() {
-//   runApp(const MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   // This widget is the root of your application.
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Flutter Demo',
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//       ),
-//       home: const MyHomePage(title: 'Flutter Demo Home Page'),
-//     );
-//   }
-// }
-
-// class MyHomePage extends StatefulWidget {
-//   const MyHomePage({super.key, required this.title});
-//   final String title;
-
-//   @override
-//   State<MyHomePage> createState() => _MyHomePageState();
-// }
-
-// class _MyHomePageState extends State<MyHomePage> {
-//   int _counter = 0;
-
-//   void _incrementCounter() {
-//     setState(() {
-//       _counter++;
-//     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(widget.title),
-//       ),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: <Widget>[
-//             const Text(
-//               'You have pushed the button this many times:',
-//             ),
-//             Text(
-//               '$_counter',
-//               style: Theme.of(context).textTheme.headlineMedium,
-//             ),
-//           ],
-//         ),
-//       ),
-//       floatingActionButton: FloatingActionButton(
-//         onPressed: _incrementCounter,
-//         tooltip: 'Increment',
-//         child: const Icon(Icons.add),
-//       ),
-//     );
-//   }
-// }
-
 // Dart imports:
 import 'dart:collection';
+import 'dart:convert';
+
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Project imports:
+import 'package:flutter_bfs/models/cell.dart';
 
 void main() {
-  List<List<String>> maze = [
-    ['#', '#', '#', '#', '#', '#', '#', '#'],
-    ['#', '.', '.', '.', '#', '.', '.', '#'],
-    ['#', '.', '#', '.', '#', '.', '#', '#'],
-    ['#', '.', '#', '.', '.', '.', '.', '#'],
-    ['#', '#', '#', '#', '#', '#', '#', '#']
-  ];
-
-  Map<String, int> start = {'x': 1, 'y': 1};
-  Map<String, int> goal = {'x': 3, 'y': 6};
-
-  List<Map<String, int>>? res = breadthFirstSearch(maze, start, goal);
-  print(res);
+  runApp(const MyApp());
 }
 
-List<Map<String, int>>? breadthFirstSearch(
-    List<List<String>> maze, Map<String, int> start, Map<String, int> goal) {
-  var queue = Queue<Map<String, int>>();
-  List<Map<String, int>> visited = [];
-  Map<String, Map<String, int>> parents = {};
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-  queue.add(start);
-  visited.add(start);
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(),
+    );
+  }
+}
 
-  while (queue.isNotEmpty) {
-    var current = queue.removeFirst();
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
 
-    if (current["x"] == goal["x"] && current["y"] == goal["y"]) {
-      // ゴールに到達した場合、最短経路を返す
-      var path = [current];
-      print(parents);
-      while (current != start) {
-        current = parents["${current["x"]}-${current["y"]}"]!;
-        path.insert(0, current);
-      }
-      return path;
-    }
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
 
-    //   // 4方向に移動できるか確認し、移動できる場合はキューに追加する
-    int row = current['x']!;
-    int col = current['y']!;
-    var directions = [
-      {'x': -1, 'y': 0},
-      {'x': 0, 'y': -1},
-      {'x': 1, 'y': 0},
-      {'x': 0, 'y': 1},
-    ];
-    for (var direction in directions) {
-      var newRow = row + direction['x']!;
-      var newCol = col + direction['y']!;
+class _MyHomePageState extends State<MyHomePage> {
+  late List<List<Cell>> maze;
+  late Cell start;
+  late Cell goal;
 
-      if (newRow < 0 ||
-          newRow >= maze.length ||
-          newCol < 0 ||
-          newCol >= maze[0].length) {
-        // print('マップ外');
-        // print("x: $newRow, y: $newCol");
-        continue; // マップの範囲外の場合はスキップ
-      }
-
-      if (maze[newRow][newCol] == '#' ||
-          visited.indexWhere((v) => v["x"] == newRow && v['y'] == newCol) !=
-              -1) {
-        // print('壁 or 訪れた');
-        // print("x: $newRow, y: $newCol");
-        continue; // 壁またはすでに訪問済みの場合はスキップ
-      }
-
-      queue.add({'x': newRow, 'y': newCol});
-      visited.add({'x': newRow, 'y': newCol});
-      parents["$newRow-$newCol"] = current;
-    }
+  @override
+  void initState() {
+    maze = getMaze();
+    start = maze[1][1];
+    goal = maze[3][6];
+    // List<Cell>? res = breadthFirstSearch(maze, start, goal);
+    super.initState();
   }
 
-  // ゴールに到達できない場合
-  return null;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("迷路"),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Center(
+              child: SizedBox(
+                width: 1000,
+                child: GridView.count(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  crossAxisCount: maze[0].length, // グリッドの列数
+                  children:
+                      List.generate(maze.length * maze[0].length, // グリッドのセル数
+                          (index) {
+                    int x = index ~/ maze[0].length;
+                    int y = index % maze[0].length;
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: maze[x][y].getColor(),
+                        border: Border.all(
+                          color: Colors.black,
+                          width: 1,
+                        ),
+                      ),
+                      child: Center(child: Text(maze[x][y].getText())),
+                    );
+                  }),
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            ElevatedButton(
+                onPressed: breadthFirstSearch, child: const Text('開始'))
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<List<Cell>?> breadthFirstSearch() async {
+    var queue = Queue<Cell>();
+    List<Cell> visited = [];
+    Cell current = start;
+    queue.add(start);
+    setState(() {
+      start.visited = true;
+    });
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    while (queue.isNotEmpty) {
+      current = queue.removeFirst();
+
+      //   // 4方向に移動できるか確認し、移動できる場合はキューに追加する
+      int row = current.x;
+      int col = current.y;
+      var directions = [
+        {'x': -1, 'y': 0},
+        {'x': 0, 'y': -1},
+        {'x': 1, 'y': 0},
+        {'x': 0, 'y': 1},
+      ];
+      for (var direction in directions) {
+        var newRow = row + direction['x']!;
+        var newCol = col + direction['y']!;
+
+        if (newRow < 0 ||
+            newRow >= maze.length ||
+            newCol < 0 ||
+            newCol >= maze[0].length) {
+          continue; // マップの範囲外の場合はスキップ
+        }
+
+        if (maze[newRow][newCol].value == '#' || maze[newRow][newCol].visited) {
+          continue; // 壁またはすでに訪問済みの場合はスキップ
+        }
+
+        setState(() {
+          maze[newRow][newCol].visited = true;
+          maze[newRow][newCol].parent = current;
+          maze[newRow][newCol].distance = current.distance + 1;
+        });
+        queue.add(maze[newRow][newCol]);
+        visited.add(maze[newRow][newCol]);
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+    }
+
+    // ここから戻るように色を塗る
+    if (goal.parent == null) {
+      return null;
+    }
+
+    setState(() {
+      goal.shortest = true;
+    });
+    current = goal.parent!;
+    await Future.delayed(const Duration(milliseconds: 500));
+    while (current.value != 'S') {
+      setState(() {
+        current.shortest = true;
+      });
+      current = current.parent!;
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+    setState(() {
+      start.shortest = true;
+    });
+    // ゴールに到達できない場合
+    return null;
+  }
 }
