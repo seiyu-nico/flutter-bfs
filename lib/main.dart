@@ -45,7 +45,6 @@ class _MyHomePageState extends State<MyHomePage> {
     maze = getMaze();
     start = maze[1][1];
     goal = maze[3][6];
-    // List<Cell>? res = breadthFirstSearch(maze, start, goal);
     super.initState();
   }
 
