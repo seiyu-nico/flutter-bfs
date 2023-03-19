@@ -1,6 +1,6 @@
 // Dart imports:
 import 'dart:collection';
-import 'dart:convert';
+import 'dart:math' as math;
 
 // Flutter imports:
 import 'package:flutter/material.dart';
@@ -50,51 +50,52 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    double cellSize = getCellSize();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("迷路"),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Center(
-              child: SizedBox(
-                width: 1000,
-                child: GridView.count(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  crossAxisCount: maze[0].length, // グリッドの列数
-                  children:
-                      List.generate(maze.length * maze[0].length, // グリッドのセル数
-                          (index) {
-                    int x = index ~/ maze[0].length;
-                    int y = index % maze[0].length;
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: maze[x][y].getColor(),
-                        border: Border.all(
-                          color: Colors.black,
-                          width: 1,
-                        ),
-                      ),
-                      child: Center(child: Text(maze[x][y].getText())),
-                    );
-                  }),
-                ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Center(
+                child: Table(
+                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                    border: TableBorder.all(),
+                    children: maze
+                        .map((line) => TableRow(
+                              children: line
+                                  .map(
+                                    (Cell cell) => Container(
+                                      height: cellSize,
+                                      width: cellSize,
+                                      decoration: BoxDecoration(
+                                        color: cell.getColor(),
+                                      ),
+                                      child:
+                                          Center(child: Text(cell.getText())),
+                                    ),
+                                  )
+                                  .toList(),
+                            ))
+                        .toList()),
               ),
-            ),
-            const SizedBox(
-              height: 16,
-            ),
-            ElevatedButton(
-                onPressed: breadthFirstSearch, child: const Text('開始'))
-          ],
+              const SizedBox(
+                height: 16,
+              ),
+              ElevatedButton(
+                  onPressed: breadthFirstSearch, child: const Text('開始'))
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Future<List<Cell>?> breadthFirstSearch() async {
+  Future<void> breadthFirstSearch() async {
     var queue = Queue<Cell>();
     List<Cell> visited = [];
     Cell current = start;
@@ -144,7 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (goal.parent == null) {
       // ゴールに到達できない場合
-      return null;
+      return;
     }
 
     // ここから戻るように色を塗る
@@ -163,5 +164,14 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       start.shortest = true;
     });
+  }
+
+  double getCellSize() {
+    double deviceWidth = MediaQuery.of(context).size.width * 0.8;
+    double deviceHeight = MediaQuery.of(context).size.height * 0.8;
+    double cellWidth = deviceWidth / maze.length;
+    double cellHeight = deviceHeight / maze.length;
+
+    return math.min(cellWidth, cellHeight);
   }
 }
