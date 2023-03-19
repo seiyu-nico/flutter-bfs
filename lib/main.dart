@@ -96,51 +96,58 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> breadthFirstSearch() async {
-    var queue = Queue<Cell>();
-    List<Cell> visited = [];
-    Cell current = start;
-    queue.add(start);
+    var queue = Queue<List<Cell>>();
+    queue.add([start]);
+    List<Cell> tmpQueue = [];
+    List<Cell> currents = [];
     setState(() {
       start.visited = true;
     });
     await Future.delayed(const Duration(milliseconds: 500));
 
     while (queue.isNotEmpty) {
-      current = queue.removeFirst();
+      currents = queue.removeFirst();
+      for (final current in currents) {
+        //   // 4方向に移動できるか確認し、移動できる場合はキューに追加する
+        int row = current.x;
+        int col = current.y;
+        var directions = [
+          {'x': -1, 'y': 0},
+          {'x': 0, 'y': -1},
+          {'x': 1, 'y': 0},
+          {'x': 0, 'y': 1},
+        ];
+        for (var direction in directions) {
+          var newRow = row + direction['x']!;
+          var newCol = col + direction['y']!;
 
-      //   // 4方向に移動できるか確認し、移動できる場合はキューに追加する
-      int row = current.x;
-      int col = current.y;
-      var directions = [
-        {'x': -1, 'y': 0},
-        {'x': 0, 'y': -1},
-        {'x': 1, 'y': 0},
-        {'x': 0, 'y': 1},
-      ];
-      for (var direction in directions) {
-        var newRow = row + direction['x']!;
-        var newCol = col + direction['y']!;
+          if (newRow < 0 ||
+              newRow >= maze.length ||
+              newCol < 0 ||
+              newCol >= maze[0].length) {
+            continue; // マップの範囲外の場合はスキップ
+          }
 
-        if (newRow < 0 ||
-            newRow >= maze.length ||
-            newCol < 0 ||
-            newCol >= maze[0].length) {
-          continue; // マップの範囲外の場合はスキップ
-        }
+          if (maze[newRow][newCol].value == '#' ||
+              maze[newRow][newCol].visited) {
+            continue; // 壁またはすでに訪問済みの場合はスキップ
+          }
 
-        if (maze[newRow][newCol].value == '#' || maze[newRow][newCol].visited) {
-          continue; // 壁またはすでに訪問済みの場合はスキップ
-        }
-
-        setState(() {
+          // ここでは描画したくないのでsetStateはしない
           maze[newRow][newCol].visited = true;
           maze[newRow][newCol].parent = current;
           maze[newRow][newCol].distance = current.distance + 1;
-        });
-        queue.add(maze[newRow][newCol]);
-        visited.add(maze[newRow][newCol]);
-        await Future.delayed(const Duration(milliseconds: 500));
+          tmpQueue.add(maze[newRow][newCol]);
+        }
       }
+
+      if (tmpQueue.isNotEmpty) {
+        queue.add([...tmpQueue]);
+        tmpQueue = [];
+      }
+      // 描画の為にsetState実行
+      setState(() {});
+      await Future.delayed(const Duration(milliseconds: 500));
     }
 
     if (goal.parent == null) {
@@ -152,13 +159,13 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       goal.shortest = true;
     });
-    current = goal.parent!;
+    Cell route = goal.parent!;
     await Future.delayed(const Duration(milliseconds: 500));
-    while (current.value != 'S') {
+    while (route.value != 'S') {
       setState(() {
-        current.shortest = true;
+        route.shortest = true;
       });
-      current = current.parent!;
+      route = route.parent!;
       await Future.delayed(const Duration(milliseconds: 500));
     }
     setState(() {
