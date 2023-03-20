@@ -41,11 +41,15 @@ class _MyHomePageState extends State<MyHomePage> {
   late Cell start;
   late Cell goal;
 
+  static const duration = 200;
+
   @override
   void initState() {
     maze = getMaze();
-    start = maze[1][1];
-    goal = maze[3][6];
+    start =
+        maze.expand((v) => v).toList().firstWhere((Cell v) => v.value == "S");
+    goal =
+        maze.expand((v) => v).toList().firstWhere((Cell v) => v.value == "G");
     super.initState();
   }
 
@@ -104,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       start.visited = true;
     });
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: duration));
 
     while (queue.isNotEmpty) {
       currents = queue.removeFirst();
@@ -148,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       // 描画の為にsetState実行
       setState(() {});
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: duration));
     }
 
     if (goal.parent == null) {
@@ -161,13 +165,13 @@ class _MyHomePageState extends State<MyHomePage> {
       goal.shortest = true;
     });
     Cell route = goal.parent!;
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: duration));
     while (route.value != 'S') {
       setState(() {
         route.shortest = true;
       });
       route = route.parent!;
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: duration));
     }
     setState(() {
       start.shortest = true;
