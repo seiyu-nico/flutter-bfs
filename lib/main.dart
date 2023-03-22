@@ -55,47 +55,61 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    double cellSize = getCellSize();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("迷路"),
       ),
-      body: SingleChildScrollView(
+      body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Center(
-                child: Table(
-                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                    border: TableBorder.all(),
-                    children: maze
-                        .map((line) => TableRow(
-                              children: line
-                                  .map(
-                                    (Cell cell) => Container(
-                                      height: cellSize,
-                                      width: cellSize,
-                                      decoration: BoxDecoration(
-                                        color: cell.getColor(),
-                                      ),
-                                      child:
-                                          Center(child: Text(cell.getText())),
-                                    ),
-                                  )
-                                  .toList(),
-                            ))
-                        .toList()),
-              ),
-              const SizedBox(
-                height: 16,
-              ),
-              ElevatedButton(
-                  onPressed: breadthFirstSearch, child: const Text('開始'))
-            ],
+          padding: const EdgeInsets.all(8.0),
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return Column(
+                children: [
+                  buildCustomGrid(
+                      n: maze.length,
+                      availableHeight: constraints.maxHeight * 0.7),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  ElevatedButton(
+                      onPressed: breadthFirstSearch, child: const Text('開始'))
+                ],
+              );
+            },
           ),
         ),
+      ),
+    );
+  }
+
+  Widget buildCustomGrid({required int n, required double availableHeight}) {
+    final tileSize = availableHeight / n;
+
+    return SizedBox(
+      width: tileSize * n,
+      height: tileSize * n,
+      child: GridView.builder(
+        itemCount: n * n,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: n,
+          crossAxisSpacing: 2.0,
+          mainAxisSpacing: 2.0,
+          childAspectRatio: 1.0,
+        ),
+        itemBuilder: (BuildContext context, int index) {
+          int x = index % n;
+          int y = index ~/ n;
+
+          return GridTile(
+            child: Container(
+              decoration: BoxDecoration(
+                color: maze[y][x].getColor(),
+              ),
+              child: Center(child: Text(maze[y][x].getText())),
+            ),
+          );
+        },
       ),
     );
   }
