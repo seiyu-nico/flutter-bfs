@@ -1,16 +1,8 @@
-# flutter_bfs
+# FlutterでBFS(幅優先探索)の実装
 
-A new Flutter project.
+## 迷路について
+- 迷路作成は時間がかかるので現状機能として存在しない
+[Colab](https://colab.research.google.com/drive/1PLAZOJzzRcbw8nd5OmDupIWrJbOup9HC#scrollTo=6t6UhVxkAbRg)にpythonコードがあるので、これをドライブにコピー後実行し出力を`lib/models/cell.dart`の`getMaze`メソッドの`return`にコピペすることで変更が可能
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## TODO
+- 迷路の切り替えをできるようにボタンを用意する
