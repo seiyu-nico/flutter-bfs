@@ -191,13 +191,4 @@ class _MyHomePageState extends State<MyHomePage> {
       start.shortest = true;
     });
   }
-
-  double getCellSize() {
-    double deviceWidth = MediaQuery.of(context).size.width * 0.8;
-    double deviceHeight = MediaQuery.of(context).size.height * 0.8;
-    double cellWidth = deviceWidth / maze.length;
-    double cellHeight = deviceHeight / maze.length;
-
-    return math.min(cellWidth, cellHeight);
-  }
 }
